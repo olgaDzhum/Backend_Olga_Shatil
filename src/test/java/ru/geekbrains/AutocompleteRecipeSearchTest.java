@@ -1,10 +1,13 @@
 package ru.geekbrains;
 
-import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.geekbrains.spoonaccular.model.AutocompleteRecipeSearchAccountResponse;
+
+import java.util.Locale;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
+import static ru.geekbrains.Endpoints.PECIPES_AUTOCOMPLETE;
 
 
 public class AutocompleteRecipeSearchTest extends BaseTest {
@@ -12,25 +15,18 @@ public class AutocompleteRecipeSearchTest extends BaseTest {
 
    @Test
    void complexSearchTest() {
-      given()
-              .queryParam("apiKey", apikey)
+
+      AutocompleteRecipeSearchAccountResponse[] actually = given()
               .queryParam("query", "fish")
               .queryParam("number", "2")
-              .log()
-              .uri()
-              .expect()
-              .statusCode(200)
-              .time(lessThan(1000L))
-              .body("[0].id", Matchers.notNullValue())
-              .body(containsStringIgnoringCase("fish"))
-              .body("[0].title", containsStringIgnoringCase("fish"))
-              .body("[1].title", containsStringIgnoringCase("fish"))
-              .body("[0].imageType", Matchers.notNullValue())
               .when()
-              .get("/recipes/autocomplete")
-              .prettyPeek();
-
-
+              .get(PECIPES_AUTOCOMPLETE)
+              .prettyPeek()
+              .body()
+              .as(AutocompleteRecipeSearchAccountResponse[].class);
+      Assertions.assertNotNull(actually[0].getId());
+      actually[0].getTitle().toLowerCase(Locale.ROOT).contains("fish");
+   }
    }
 
-}
+
