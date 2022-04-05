@@ -1,39 +1,28 @@
 package ru.geekbrains;
 
-import org.hamcrest.Matchers;
+import io.restassured.RestAssured;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.geekbrains.spoonaccular.model.ConnectUserResponse;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.lessThan;
+import static ru.geekbrains.Endpoints.CONNECT_USER;
+import static ru.geekbrains.RequestBody.CONNECT_USER_BODY;
 
 public class ConnectUserTest extends BaseTest {
 
-
-    private String requestBody = "{\n" +
-            "    \"username\": \"Olga\",\n" +
-            "    \"firstName\": \"Olga\",\n" +
-            "    \"lastName\": \"Ivanova\",\n" +
-            "    \"email\": \"my@adress.ru\"\n" +
-            "}";
-
     @Test
-    void ClassifyGroceryProductTest() {
-        given()
-                .queryParam("apiKey", apikey)
-                .body(requestBody)
-                .log()
-                .uri()
-                .expect()
-                .statusCode(200)
-                .time(lessThan(1000L))
-                .body("status", Matchers.is("success"))
-                .body("username", Matchers.notNullValue())
-                .body("spoonacularPassword", Matchers.notNullValue())
-                .body("hash", Matchers.notNullValue())
+    void connectUserTest() {
+        ConnectUserResponse actually = RestAssured.given()
+                .body(CONNECT_USER_BODY)
                 .when()
-                .post("/users/connect")
-                .prettyPeek();
-
+                .post(CONNECT_USER)
+                .body()
+                .prettyPeek()
+                .as(ConnectUserResponse.class);
+        Assertions.assertNotNull(actually.getUsername());
+        Assertions.assertNotNull(actually.getHash());
+        Assertions.assertNotNull(actually.getSpoonacularPassword());
+        Assertions.assertEquals("success", actually.getStatus());
 
     }
 }

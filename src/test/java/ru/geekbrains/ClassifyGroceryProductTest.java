@@ -1,10 +1,12 @@
 package ru.geekbrains;
 
-import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.geekbrains.spoonaccular.model.ClassifyGroceryProductResponse;
+
+import java.util.Locale;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
 
 public class ClassifyGroceryProductTest extends BaseTest{
 
@@ -16,25 +18,22 @@ public class ClassifyGroceryProductTest extends BaseTest{
 
 
     @Test
-    void ClassifyGroceryProductTest(){
-        given()
-                .queryParam("apiKey", apikey)
+    void ClassifyGroceryProductTest() {
+        ClassifyGroceryProductResponse actually = given()
                 .body(requestBody)
-                .log()
-                .uri()
-                .expect()
-                .statusCode(200)
-                .time(lessThan(1000L))
-                .body("matched", Matchers.notNullValue())
-                .body("matched",containsStringIgnoringCase("2% milk"))
-                .body("breadcrumbs", Matchers.notNullValue())
-                .body("category",containsStringIgnoringCase("2 percent milk"))
-                .body("usdaCode",equalTo(1174))
-                .body("image", Matchers.notNullValue())
-                .body("cleanTitle",containsStringIgnoringCase("Kroger Vitamin A & D Reduced Fat 2% Milk"))
                 .when()
                 .post("/food/products/classify")
-                .prettyPeek();
+                .body()
+                .prettyPeek()
+                .as(ClassifyGroceryProductResponse.class);
+        Assertions.assertNotNull(actually.getCategory());
+        Assertions.assertNotNull(actually.getMatched());
+        Assertions.assertNotNull(actually.getImage());
+        Assertions.assertNotNull(actually.getBreadcrumbs());
+        actually.getMatched().contains("2% milk");
+        actually.getCategory().contains("2 percent milk");
+        Assertions.assertEquals(1174, actually.getUsdaCode());
+        actually.getCleanTitle().toLowerCase(Locale.ROOT).contains("Kroger Vitamin A & D Reduced Fat 2% Milk");
 
 
     }
